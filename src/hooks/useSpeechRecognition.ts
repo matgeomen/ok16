@@ -39,6 +39,7 @@ export const useSpeechRecognition = () => {
   const finalTranscriptRef = useRef('');
   const isVoiceModeRef = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isIntentionalAbortRef = useRef(false);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -54,6 +55,7 @@ export const useSpeechRecognition = () => {
       timeoutRef.current = null;
     }
     if (recognitionRef.current) {
+      isIntentionalAbortRef.current = true;
       recognitionRef.current.abort();
       recognitionRef.current = null;
     }
@@ -75,6 +77,7 @@ export const useSpeechRecognition = () => {
     isVoiceModeRef.current = !!onSpeechEnd;
     onSpeechEndRef.current = onSpeechEnd || null;
     finalTranscriptRef.current = '';
+    isIntentionalAbortRef.current = false;
 
     // Create new recognition instance
     const recognition = new SpeechRecognition();
@@ -133,6 +136,7 @@ export const useSpeechRecognition = () => {
       console.log('🛑 Speech recognition ended');
       setIsListening(false);
       recognitionRef.current = null;
+      isIntentionalAbortRef.current = false;
       
       // For manual mode, keep the transcript
       if (!isVoiceModeRef.current && finalTranscriptRef.current) {
@@ -142,9 +146,14 @@ export const useSpeechRecognition = () => {
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      console.error('❌ Speech recognition error:', event.error);
+      if (event.error === 'aborted' && isIntentionalAbortRef.current) {
+        console.log('ℹ️ Speech recognition intentionally aborted');
+      } else {
+        console.error('❌ Speech recognition error:', event.error);
+      }
       setIsListening(false);
       recognitionRef.current = null;
+      isIntentionalAbortRef.current = false;
     };
 
     try {
@@ -153,6 +162,7 @@ export const useSpeechRecognition = () => {
       console.error('❌ Error starting recognition:', error);
       setIsListening(false);
       recognitionRef.current = null;
+      isIntentionalAbortRef.current = false;
     }
   }, [isSupported, cleanup]);
 
