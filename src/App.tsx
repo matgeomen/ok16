@@ -576,16 +576,31 @@ function App() {
                 </div>
               )}
 
+              {/* Listening Indicator - Above Input */}
+              {isListening && !isVoiceMode && (
+                <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-red-700 font-medium">
+                      🎤 Dinleniyor... Konuşmaya başlayın
+                    </span>
+                  </div>
+                  {transcript && (
+                    <div className="mt-2 text-sm text-red-800 bg-red-100 p-2 rounded">
+                      "{transcript}"
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex items-center gap-3">
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder={isListening ? "Dinleniyor... Konuşmaya başlayın" : "Mesajınızı yazın veya mikrofon butonuna basın..."}
-                  className={`flex-1 p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#003366] focus:ring-1 focus:ring-[#003366] transition-colors ${
-                    isListening ? 'border-red-300 bg-red-50' : ''
-                  }`}
+                  placeholder="Mesajınızı yazın veya mikrofon butonuna basın..."
+                  className="flex-1 p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#003366] focus:ring-1 focus:ring-[#003366] transition-colors"
                   disabled={isLoading}
                 />
                 <input
