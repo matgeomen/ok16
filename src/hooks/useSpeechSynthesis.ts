@@ -61,7 +61,10 @@ export const useSpeechSynthesis = () => {
     };
 
     utterance.onerror = (event) => {
-      console.error('Speech synthesis error:', event.error);
+      // Suppress console log for 'interrupted' errors as they are expected when cancelling speech
+      if (event.error !== 'interrupted') {
+        console.error('Speech synthesis error:', event.error);
+      }
       setIsSpeaking(false);
       // Call the callback even on error
       if (onEndCallbackRef.current) {

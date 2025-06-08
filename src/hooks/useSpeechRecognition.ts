@@ -34,6 +34,7 @@ export const useSpeechRecognition = () => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [isSupported, setIsSupported] = useState(false);
+  const [speechError, setSpeechError] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const onSpeechEndRef = useRef<((text: string) => void) | null>(null);
   const finalTranscriptRef = useRef('');
@@ -67,6 +68,9 @@ export const useSpeechRecognition = () => {
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) return;
+
+    // Clear any previous error when starting
+    setSpeechError(null);
 
     // Cleanup any existing recognition
     cleanup();
@@ -150,6 +154,10 @@ export const useSpeechRecognition = () => {
         console.log('ℹ️ Speech recognition intentionally aborted');
       } else {
         console.error('❌ Speech recognition error:', event.error);
+        // Set error state for critical errors like network issues
+        if (event.error === 'network' || event.error === 'service-not-allowed' || event.error === 'not-allowed') {
+          setSpeechError(event.error);
+        }
       }
       setIsListening(false);
       recognitionRef.current = null;
@@ -163,6 +171,7 @@ export const useSpeechRecognition = () => {
       setIsListening(false);
       recognitionRef.current = null;
       isIntentionalAbortRef.current = false;
+      setSpeechError('start-failed');
     }
   }, [isSupported, cleanup]);
 
@@ -200,6 +209,7 @@ export const useSpeechRecognition = () => {
     isListening,
     transcript,
     isSupported,
+    speechError,
     startListening,
     stopListening,
     resetTranscript,

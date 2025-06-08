@@ -24,6 +24,7 @@ function App() {
     isListening,
     transcript,
     isSupported: speechRecognitionSupported,
+    speechError,
     startListening,
     stopListening,
     resetTranscript,
@@ -49,6 +50,29 @@ function App() {
   useEffect(() => {
     voiceModeRef.current = isVoiceMode;
   }, [isVoiceMode]);
+
+  // Handle speech recognition errors in voice mode
+  useEffect(() => {
+    if (isVoiceMode && speechError) {
+      let errorMessage = '';
+      switch (speechError) {
+        case 'network':
+          errorMessage = 'Ses tanıma servisi ile bağlantı sorunu yaşanıyor. Lütfen internet bağlantınızı kontrol edin.';
+          break;
+        case 'not-allowed':
+          errorMessage = 'Mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarından mikrofon iznini verin.';
+          break;
+        case 'service-not-allowed':
+          errorMessage = 'Ses tanıma servisi kullanılamıyor. Lütfen daha sonra tekrar deneyin.';
+          break;
+        default:
+          errorMessage = 'Ses tanıma ile ilgili bir sorun oluştu. Sesli mod kapatılıyor.';
+      }
+      
+      alert(errorMessage);
+      handleVoiceToggle(); // Turn off voice mode
+    }
+  }, [isVoiceMode, speechError]);
 
   // Manual microphone: write transcript to input when listening stops
   useEffect(() => {
